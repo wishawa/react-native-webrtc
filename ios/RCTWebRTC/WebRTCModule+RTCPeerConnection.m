@@ -20,6 +20,7 @@
 #import <WebRTC/RTCSessionDescription.h>
 #import <WebRTC/RTCRtpTransceiver.h>
 #import <WebRTC/RTCStatisticsReport.h>
+#import <WebRTC/RTCLegacyStatsReport.h>
 
 #import "WebRTCModule.h"
 #import "WebRTCModule+RTCDataChannel.h"
@@ -203,7 +204,8 @@ RCT_EXPORT_METHOD(peerConnectionTransceiverSetDirection:(nonnull NSNumber *)obje
    }
    for (RTCRtpTransceiver *transceiver in peerConnection.transceivers) {
        if ([transceiver.sender.senderId isEqualToString:transceiverId]) {
-           [transceiver setDirection:[self parseDirection:direction]];
+		   NSError *error = nil;
+           [transceiver setDirection:[self parseDirection:direction] error:&error];
        }
    }
     id response = @{
@@ -246,7 +248,7 @@ RCT_EXPORT_METHOD(peerConnectionTransceiverStop:(nonnull NSNumber *)objectID
    }
    for (RTCRtpTransceiver *transceiver in peerConnection.transceivers) {
        if ([transceiver.sender.senderId isEqualToString:transceiverId]) {
-           [transceiver stop];
+           [transceiver stopInternal];
        }
    }
     id response = @{
@@ -887,7 +889,7 @@ RCT_EXPORT_METHOD(getTrackVolumes:(RCTResponseSenderBlock)callback)
                     if ([peerConnection.remoteTracks objectForKey:track.trackId] == nil) {
                         peerConnection.remoteTracks[track.trackId] = track;
                         NSString *streamReactTag = [[NSUUID UUID] UUIDString];
-                        [peerConnection addVideoTrackAdapter:streamReactTag track: track];
+                        [peerConnection addVideoTrackAdapter:track];
                     }
                 }
             }
