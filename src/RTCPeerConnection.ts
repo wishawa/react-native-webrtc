@@ -11,8 +11,10 @@ import RTCSessionDescription from './RTCSessionDescription';
 import RTCIceCandidate from './RTCIceCandidate';
 import RTCIceCandidateEvent from './RTCIceCandidateEvent';
 import RTCEvent from './RTCEvent';
+import RTCRtpTransceiver from './RTCRtpTransceiver';
 import * as RTCUtil from './RTCUtil';
 import EventEmitter from './EventEmitter';
+import type MediaStreamTrack from './MediaStreamTrack';
 
 const { WebRTCModule } = NativeModules;
 
@@ -67,6 +69,7 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
     _localStreams: MediaStream[] = [];
     _remoteStreams: MediaStream[] = [];
     _subscriptions: any[] = [];
+	_transceivers: RTCRtpTransceiver[] = [];
 
     constructor(configuration) {
         super();
@@ -93,6 +96,27 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
         WebRTCModule.peerConnectionRemoveStream(stream._reactTag, this._peerConnectionId);
     }
 
+	addTransceiver(source: 'audio' |'video' | MediaStreamTrack, init) {
+		return new Promise((resolve, reject) => {
+			let src;
+			if (source === 'audio') {
+				src = { type: 'audio' };
+			} else if (source === 'video') {
+				src = { type: 'video' };
+			} else {
+				src = { trackId: source.id };
+			}
+			WebRTCModule.peerConnectionAddTransceiver(this._peerConnectionId, {...src, init: { ...init } }, (successful, data) => {
+				if (successful) {
+					this._mergeState(data.state);
+					resolve(this._transceivers.find((v) => v.id === data.id));
+				} else {
+					reject(data);
+				}
+			});
+		});
+	};
+
     createOffer(options) {
         return new Promise((resolve, reject) => {
             WebRTCModule.peerConnectionCreateOffer(
@@ -100,7 +124,8 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
                 RTCUtil.normalizeOfferAnswerOptions(options),
                 (successful, data) => {
                     if (successful) {
-                        resolve(data);
+						this._mergeState(data.state);
+						resolve(new RTCSessionDescription(data.session));
                     } else {
                         reject(data); // TODO: convert to NavigatorUserMediaError
                     }
@@ -116,7 +141,8 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
                 RTCUtil.normalizeOfferAnswerOptions(options),
                 (successful, data) => {
                     if (successful) {
-                        resolve(data);
+						this._mergeState(data.state);
+						resolve(new RTCSessionDescription(data.session));
                     } else {
                         reject(data);
                     }
@@ -148,6 +174,7 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
                 (successful, data) => {
                     if (successful) {
                         this.remoteDescription = new RTCSessionDescription(data);
+            			this._mergeState(data.state);
                         resolve();
                     } else {
                         reject(data);
@@ -196,6 +223,18 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
         return this._remoteStreams.slice();
     }
 
+	getTransceivers() {
+		return this._transceivers.slice();
+	}
+
+	getSenders() {
+		this._transceivers.map(t => t.sender)
+	}
+
+	getReceivers() {
+		this._transceivers.map(t => t.receiver)
+	}
+
     close(): void {
         WebRTCModule.peerConnectionClose(this._peerConnectionId);
     }
@@ -203,6 +242,35 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
     restartIce(): void {
         WebRTCModule.peerConnectionRestartIce(this._peerConnectionId);
     }
+
+	_getTransceiver(state): RTCRtpTransceiver {
+		const existing = this._transceivers.find((t) => t.id === state.id);
+		if (existing) {
+			existing._updateState(state);
+			return existing;
+		} else {
+			let res = new RTCRtpTransceiver(this._peerConnectionId, state, (s) => this._mergeState(s));
+			this._transceivers.push(res);
+			return res;
+		}
+	}
+
+	_mergeState(state): void {
+		if (!state) {
+			return;
+		}
+
+		// Merge Transceivers states
+		if (state.transceivers) {
+		// Apply states
+		for(let transceiver of state.transceivers) {
+			this._getTransceiver(transceiver);
+		}
+		// Restore Order
+		this._transceivers = 
+			this._transceivers.map((t, i) => this._transceivers.find((t2) => t2.id === state.transceivers[i].id)).filter((t): t is RTCRtpTransceiver => t !== undefined);
+		}
+	}
 
     _unregisterEvents(): void {
         this._subscriptions.forEach(e => e.remove());
