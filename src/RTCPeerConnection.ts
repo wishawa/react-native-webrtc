@@ -135,7 +135,7 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
                 ? sessionDescription.toJSON()
                 : sessionDescription
             : null;
-        const newSdp = await WebRTCModule.peerConnectionSetLocalDescription(this._peerConnectionId, desc);
+        const newSdp = await WebRTCModule.peerConnectionSetLocalDescription(this._peerConnectionId, desc).session;
 
         this.localDescription = new RTCSessionDescription(newSdp);
     }

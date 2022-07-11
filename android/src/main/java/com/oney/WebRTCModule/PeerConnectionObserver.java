@@ -19,6 +19,7 @@ import org.webrtc.MediaStream;
 import org.webrtc.MediaStreamTrack;
 import org.webrtc.PeerConnection;
 import org.webrtc.RtpReceiver;
+import org.webrtc.RtpTransceiver;
 import org.webrtc.SessionDescription;
 import org.webrtc.VideoTrack;
 
@@ -42,11 +43,14 @@ class PeerConnectionObserver implements PeerConnection.Observer {
     final Map<String, MediaStream> remoteStreams;
     final Map<String, MediaStreamTrack> remoteTracks;
     private final VideoTrackAdapter videoTrackAdapters;
+    final boolean isUnifiedPlan;
+    final VideoTrackAdapter videoTrackAdapters;
     private final WebRTCModule webRTCModule;
 
-    PeerConnectionObserver(WebRTCModule webRTCModule, int id) {
+    PeerConnectionObserver(WebRTCModule webRTCModule, int id, boolean isUnifiedPlan) {
         this.webRTCModule = webRTCModule;
         this.id = id;
+		this.isUnifiedPlan = isUnifiedPlan;
         this.dataChannels = new HashMap<>();
         this.localStreams = new ArrayList<>();
         this.remoteStreams = new HashMap<>();
@@ -89,6 +93,35 @@ class PeerConnectionObserver implements PeerConnection.Observer {
         }
 
         return localStreams.remove(localStream);
+    }
+
+	String addTransceiver(MediaStreamTrack.MediaType mediaType, RtpTransceiver.RtpTransceiverInit init) {
+        if (peerConnection == null) {
+            throw new Error("Impossible");
+        }
+        RtpTransceiver transceiver = peerConnection.addTransceiver(mediaType, init);
+        return this.resolveTransceiverId(transceiver);
+    }
+
+    String addTransceiver(MediaStreamTrack track, RtpTransceiver.RtpTransceiverInit init) {
+        if (peerConnection == null) {
+            throw new Error("Impossible");
+        }
+        RtpTransceiver transceiver = peerConnection.addTransceiver(track, init);
+        return this.resolveTransceiverId(transceiver);
+    }
+
+    String resolveTransceiverId(RtpTransceiver transceiver) {
+        return transceiver.getSender().id();
+    }
+
+    RtpTransceiver getTransceiver(String id) {
+        for(RtpTransceiver transceiver: this.peerConnection.getTransceivers()) {
+            if (transceiver.getSender().id().equals(id)) {
+                return transceiver;
+            }
+        }
+        throw new Error("Unable to find transceiver");
     }
 
     PeerConnection getPeerConnection() {

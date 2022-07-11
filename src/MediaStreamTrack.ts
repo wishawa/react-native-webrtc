@@ -54,6 +54,9 @@ class MediaStreamTrack extends defineCustomEventTarget(...MEDIA_STREAM_TRACK_EVE
     get muted(): boolean {
         return this._muted;
     }
+	set muted(muted: boolean) {
+		this._muted = muted;
+	}
 
     stop(): void {
         WebRTCModule.mediaStreamTrackSetEnabled(this.id, false);
