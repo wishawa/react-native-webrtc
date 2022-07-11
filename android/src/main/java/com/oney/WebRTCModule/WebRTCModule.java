@@ -208,7 +208,7 @@ public class WebRTCModule extends ReactContextBaseJavaModule {
         conf.enableImplicitRollback = true;
 
         // Plan B, just a little longer.
-        conf.sdpSemantics = PeerConnection.SdpSemantics.PLAN_B;
+        conf.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN;
 
         if (map == null) {
             return conf;
