@@ -285,7 +285,6 @@ RCT_EXPORT_METHOD(peerConnectionCreateOffer:(nonnull NSNumber *)objectID
         } else {
           [self applyTransceivers: peerConnection];
           NSString *type = [RTCSessionDescription stringForType:sdp.type];
-          callback(@[@(YES), @{@"sdp": sdp.sdp, @"type": type}]);
           id response = @{
             @"state": [self extractPeerConnectionState: peerConnection],
             @"session":  @{@"sdp": sdp.sdp, @"type": type}
