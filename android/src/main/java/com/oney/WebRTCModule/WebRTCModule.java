@@ -417,7 +417,7 @@ public class WebRTCModule extends ReactContextBaseJavaModule {
 
         try {
             ThreadUtils.submitToExecutor(() -> {
-                PeerConnectionObserver observer = new PeerConnectionObserver(this, id, configuration.sdpSemantics == PeerConnection.SdpSemantics.UNIFIED_PLAN);
+                PeerConnectionObserver observer = new PeerConnectionObserver(this, id, rtcConfiguration.sdpSemantics == PeerConnection.SdpSemantics.UNIFIED_PLAN);
                 PeerConnection peerConnection = mFactory.createPeerConnection(rtcConfiguration, observer);
                 observer.setPeerConnection(peerConnection);
                 mPeerConnectionObservers.put(id, observer);
@@ -787,7 +787,7 @@ public class WebRTCModule extends ReactContextBaseJavaModule {
 
                     WritableMap res = Arguments.createMap();
                     res.putMap("session", newSdpMap);
-                    res.putMap("state", serializeState(id));
+                    res.putMap("state", serializeState(pcId));
                     promise.resolve(res);
                 }
 
