@@ -228,11 +228,11 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
 	}
 
 	getSenders() {
-		this._transceivers.map(t => t.sender)
+		return this._transceivers.map(t => t.sender);
 	}
 
 	getReceivers() {
-		this._transceivers.map(t => t.receiver)
+		return this._transceivers.map(t => t.receiver);
 	}
 
     close(): void {
@@ -268,7 +268,7 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
 			}
 			// Restore Order
 			this._transceivers = 
-				this._transceivers.map((t, i) => this._transceivers.find((t2) => t2._id === state.transceivers[i].id)).filter((t): t is RTCRtpTransceiver => t !== undefined);
+				this._transceivers.map((t, i) => this._transceivers.find((t2) => t2.id === state.transceivers[i].id)).filter((t): t is RTCRtpTransceiver => t !== undefined);
 		}
 	}
 
