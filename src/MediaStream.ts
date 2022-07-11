@@ -117,8 +117,9 @@ export default class MediaStream extends defineCustomEventTarget(...MEDIA_STREAM
 		return this._tracks.filter(track => track.kind === 'video');
 	}
 
-	clone(): never {
-		throw new Error('Not implemented.');
+	clone(): MediaStream {
+		console.warn("MediaStream clone is shimmed.");
+		return new MediaStream(this);
 	}
 
 	toURL(): string {

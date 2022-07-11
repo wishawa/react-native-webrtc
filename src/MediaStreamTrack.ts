@@ -82,15 +82,25 @@ class MediaStreamTrack extends defineCustomEventTarget(...MEDIA_STREAM_TRACK_EVE
     }
 
     applyConstraints(): never {
-        throw new Error('Not implemented.');
+        throw new Error('MediaStreamTrack applyConstraints not implemented.');
     }
 
-    clone(): never {
-        throw new Error('Not implemented.');
+    clone(): MediaStreamTrack {
+		console.warn("MediaStreamTrack clone is shimmed.");
+		return new MediaStreamTrack({
+			id: this.id,
+			kind: this.kind,
+			label: this.label,
+			muted: this.muted,
+			remote: this.remote,
+			constraints: this.getConstraints(),
+			enabled: this._enabled,
+			settings: this.getSettings()
+		});
     }
 
     getCapabilities(): never {
-        throw new Error('Not implemented.');
+        throw new Error('MediaStreamTrack getCapabilities not implemented.');
     }
 
     getConstraints() {
