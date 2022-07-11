@@ -106,7 +106,7 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
 			} else {
 				src = { trackId: source.id };
 			}
-			WebRTCModule.peerConnectionAddTransceiver(this._peerConnectionId, {...src, init: { ...init } }, (successful, data) => {
+			WebRTCModule.peerConnectionAddTransceiver(this._peerConnectionId, {...src, init: { ...init } }, (successful: boolean, data: {id: string, state: any}) => {
 				if (successful) {
 					this._mergeState(data.state);
 					resolve(this._transceivers.find((v) => v.id === data.id));
@@ -171,9 +171,9 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
             WebRTCModule.peerConnectionSetRemoteDescription(
                 sessionDescription.toJSON ? sessionDescription.toJSON() : sessionDescription,
                 this._peerConnectionId,
-                (successful, data) => {
+                (successful: boolean, data: {session: {type, sdp}, state}) => {
                     if (successful) {
-                        this.remoteDescription = new RTCSessionDescription(data);
+                        this.remoteDescription = new RTCSessionDescription(data.session);
             			this._mergeState(data.state);
                         resolve();
                     } else {
@@ -262,13 +262,13 @@ export default class RTCPeerConnection extends defineCustomEventTarget(...PEER_C
 
 		// Merge Transceivers states
 		if (state.transceivers) {
-		// Apply states
-		for(let transceiver of state.transceivers) {
-			this._getTransceiver(transceiver);
-		}
-		// Restore Order
-		this._transceivers = 
-			this._transceivers.map((t, i) => this._transceivers.find((t2) => t2.id === state.transceivers[i].id)).filter((t): t is RTCRtpTransceiver => t !== undefined);
+			// Apply states
+			for(let transceiver of state.transceivers) {
+				this._getTransceiver(transceiver);
+			}
+			// Restore Order
+			this._transceivers = 
+				this._transceivers.map((t, i) => this._transceivers.find((t2) => t2.id === state.transceivers[i].id)).filter((t): t is RTCRtpTransceiver => t !== undefined);
 		}
 	}
 
