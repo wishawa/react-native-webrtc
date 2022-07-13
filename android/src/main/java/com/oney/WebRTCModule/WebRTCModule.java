@@ -89,7 +89,7 @@ public class WebRTCModule extends ReactContextBaseJavaModule {
         VideoEncoderFactory encoderFactory = null;
         VideoDecoderFactory decoderFactory = null;
         Loggable injectableLogger = null;
-        Logging.Severity loggingSeverity = null;
+        Logging.Severity loggingSeverity = Logging.Severity.LS_VERBOSE;
 
         if (options != null) {
             adm = options.audioDeviceModule;
