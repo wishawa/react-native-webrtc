@@ -80,7 +80,7 @@ export default class MediaStream extends defineCustomEventTarget(...MEDIA_STREAM
 				const eventName = ev.muted ? 'mute' : 'unmute';
 				track.dispatchEvent(new MediaStreamTrackEvent(eventName, { track }));
 			}
-		})
+		});
 	}
 
 	addTrack(track: MediaStreamTrack): void {

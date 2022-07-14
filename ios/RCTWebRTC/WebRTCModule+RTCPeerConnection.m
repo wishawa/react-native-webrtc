@@ -161,7 +161,7 @@ RCT_EXPORT_METHOD(peerConnectionAddTransceiver:(nonnull NSNumber *)objectID
     RTCRtpTransceiverInit *init = [RTCRtpTransceiverInit new];
     init.direction = RTCRtpTransceiverDirectionSendRecv;
     if ([options objectForKey:@"init"] != nil) {
-        NSDictionary* initOpt = [options objectForKey:options];
+        NSDictionary* initOpt = [options objectForKey:@"init"];
         if ([initOpt objectForKey:@"direction"] != nil) {
             init.direction = [self parseDirection: [initOpt objectForKey:@"direction"]];
         }
